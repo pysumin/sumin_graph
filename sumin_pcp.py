@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas.plotting import parallel_coordinates as pcp
+import streamlit as st
 
 digits = datasets.load_digits()
 n_samples = len(digits.images)
