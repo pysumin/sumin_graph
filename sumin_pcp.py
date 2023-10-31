@@ -120,14 +120,14 @@ def pcp2 (df, y_name):
 def get_df():
 
     st.sidebar.title('Getting Dataset')
-    howtogetdataset = st.sidebar.selectbox('select methode', ['load clipboard', 'loade sample set'])
+    howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'load clipboard'])
     if howtogetdataset == 'load clipboard':
         try:
             df = pd.read_clipboard(sep='WWs+')
             st.sidebar.write(df.shape)
             y = st.sidebar.selectbox('select Y:',df.columns)
         except:
-            st.write('클립보드가 비어있음')
+            st.sidebar.write('clipboard empty :( ')
             return 0, 0
     else :
         df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
