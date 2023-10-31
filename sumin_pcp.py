@@ -14,24 +14,6 @@ st.set_page_config(layout="wide")
 # @st.cache_data(experimental_allow_widgets=True)
 # @st.cache_data
 
-def select_y():
-    # st.sidebar.title('Select Y')
-    # try:
-    #     df = pd.read_clipboard(sep='WWs+')
-    # except:
-    #     st.write('클립보드가 비어있음')
-    #     return 0, 0
-    df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
-    y = st.sidebar.selectbox('columns:',df.columns)
-
-    #y를 맨 처음으로 이동시킴
-    cols = df.columns.to_list() 
-    inxofy = cols.index(y) 
-    cols.pop(inxofy) 
-    cols = [y]+cols
-    df = df[cols]
-
-    return df, y
 
 
 def pcp2 (df, y_name):
@@ -135,15 +117,44 @@ def pcp2 (df, y_name):
     return fig1, fig2, fig3
 
 
+def get_df():
+
+    st.sidebar.title('Getting Dataset')
+    howtogetdataset = st.sidebar.selectbox('select methode', ['load clipboard', 'loade sample set'])
+    if howtogetdataset == 'load clipboard':
+        try:
+            df = pd.read_clipboard(sep='WWs+')
+            st.sidebar.write(df.shape)
+            y = st.sidebar.selectbox('select Y:',df.columns)
+        except:
+            st.write('클립보드가 비어있음')
+            return 0, 0
+    else :
+        df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
+        st.sidebar.write(df.shape)
+        y = st.sidebar.selectbox('select Y:',df.columns)
+
+    #y를 맨 처음으로 이동시킴
+    cols = df.columns.to_list() 
+    inxofy = cols.index(y) 
+    cols.pop(inxofy) 
+    cols = [y]+cols
+    df = df[cols]
+
+    return df, y
+
+
+
 # y로 쓸걸 고름 
-df, y_name = select_y()
+df, y_name = get_df()
 
 #x 인자를 고름 
-x = st.sidebar.multiselect('optios', df.columns)
+x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list())
+if 'all' in x :
+    x = df.columns
 if y_name not in x: 
     x.insert(0, y_name)
 df = df[x]
-
 
 st.sidebar.title('GRAPH') 
 if st.sidebar.button('Draw PCP'):
