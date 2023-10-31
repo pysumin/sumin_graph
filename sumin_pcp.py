@@ -7,6 +7,7 @@ import plotly.graph_objs as go
 from sklearn.preprocessing import LabelEncoder 
 import streamlit.components.v1 as components 
 from plotly.subplots import make_subplots 
+import pyperclip
 
 plt.rcParams['font.family'] = 'Malgun Gothic' 
 st.set_page_config(layout="wide")
@@ -123,8 +124,11 @@ def get_df():
     howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'load clipboard'])
     if howtogetdataset == 'load clipboard':
         try:
-            df = pd.read_clipboard(sep='WWs+')
-            st.sidebar.write(df.shape)
+            clipboard_text = pyperclip.paste()
+            st.write(type(clipboard_text))
+            st.code(clipboard_text)
+            # df = pd.read_clipboard(sep='WWs+')
+            st.sidebar.write(clipboard_text.shape)
             y = st.sidebar.selectbox('select Y:',df.columns)
         except:
             st.sidebar.write('clipboard empty :( ')
