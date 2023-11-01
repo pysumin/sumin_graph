@@ -125,6 +125,7 @@ def get_df():
     if howtogetdataset == 'load clipboard':
         try:
             clipboard_text = pyperclip.paste()
+            st.code(clipboard_text)
             table_data = [row.split('\t') for row in clipboard_text.split('\r\n')]
             df = pd.DataFrame(table_data[1:], columns=table_data[0])
             
