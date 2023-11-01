@@ -125,10 +125,11 @@ def get_df():
     if howtogetdataset == 'load clipboard':
         try:
             clipboard_text = pyperclip.paste()
-            st.write(type(clipboard_text))
-            st.code(clipboard_text)
+            table_data = [row.split('\t') for row in clipboard_text.split('\r\n')]
+            df = pd.DataFrame(table_data[1:], columns=table_data[0])
+            
             # df = pd.read_clipboard(sep='WWs+')
-            st.sidebar.write(clipboard_text.shape)
+            st.sidebar.write(df.shape)
             y = st.sidebar.selectbox('select Y:',df.columns)
         except:
             st.sidebar.write('clipboard empty :( ')
