@@ -175,8 +175,7 @@ def pcp2 (df, y_name):
 #     st.plotly_chart(fig1, use_container_width = True)
 
 
-clipboard_text = pyperclip.paste()
-
-# streamlit 앱에 클립보드의 내용 표시
-st.write("클립보드 내용:")
-st.code(clipboard_text)
+clipboard_text = st.text_area('paste dataset', height = 5)
+table_data = [row.split('\t') for row in clipboard_text.split('\n')]
+df = pd.DataFrame(table_data[1:], columns=table_data[0])
+st.write(df.head())
