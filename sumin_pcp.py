@@ -157,9 +157,19 @@ if y_name not in x:
     x.insert(0, y_name)
 df = df[x]
 
+# ============필터링 ===========
+st.sidebar.title('Filtering')
+filters = {}
+cols = st.sidebar.multiselect('select filtering items:', df.columns.to_list())
+for col in cols:
+    vals = st.sidebar.multiselect('select values of '+col, df[col].unique(), default = df[col].unique())
+    filters[col] = vals  #선택한 컬럼에서 선택한 값을 저장해둠
+for key in filters.keys():
+    df = df[    df[key].isin(filters[key])   ]
+
+# ===========그래프 그리기==========
 st.sidebar.title('GRAPH') 
 if st.sidebar.button('Draw PCP'):
-
     fig1, fig2, fig3 = pcp2(df, y_name) 
     fig1.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} )
     fig2.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} ) 
