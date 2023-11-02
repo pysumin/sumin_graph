@@ -120,7 +120,6 @@ def pcp2 (df, y_name):
 
 def get_df():
 
-
     st.sidebar.title('Getting Dataset')
     howtogetdataset = st.sidebar.selectbox('select dataset:', ['text input','loade sample set' ])
     if howtogetdataset == 'text input':
@@ -130,7 +129,6 @@ def get_df():
         
         for i in df.columns:
             df[i] = df[i].astype('float64', copy=True, errors='ignore')
-            st.write(df[i].dtype)
         y = st.sidebar.selectbox('select Y:',df.columns)
     else :
         df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
@@ -139,7 +137,7 @@ def get_df():
 
     #y를 맨 처음으로 이동시킴
     cols = df.columns.to_list() 
-    inxofy = cols.index(y) 
+    inxofy = cols.index(y)
     cols.pop(inxofy) 
     cols = [y]+cols
     df = df[cols]
@@ -152,7 +150,7 @@ def get_df():
 df, y_name = get_df()
 
 #x 인자를 고름 
-x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list())
+x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list(), default = 'all')
 if 'all' in x :
     x = df.columns
 if y_name not in x: 
