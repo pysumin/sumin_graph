@@ -118,64 +118,57 @@ def pcp2 (df, y_name):
     return fig1, fig2, fig3
 
 
-# def get_df():
+def get_df():
 
 
-#     st.sidebar.title('Getting Dataset')
-#     howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'load clipboard'])
-#     if howtogetdataset == 'load clipboard':
-#         try:
-#             clipboard_text = pyperclip.paste()
-#             st.code(clipboard_text)
-#             table_data = [row.split('\t') for row in clipboard_text.split('\r\n')]
-#             df = pd.DataFrame(table_data[1:], columns=table_data[0])
-            
-#             # df = pd.read_clipboard(sep='WWs+')
-#             st.sidebar.write(df.shape)
-#             y = st.sidebar.selectbox('select Y:',df.columns)
-#         except:
-#             st.sidebar.write('clipboard empty :( ')
-#             return 0, 0
-#     else :
-#         df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
-#         st.sidebar.write(df.shape)
-#         y = st.sidebar.selectbox('select Y:',df.columns)
+    st.sidebar.title('Getting Dataset')
+    howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'text input'])
+    if howtogetdataset == 'text input':
+        try:
+            text = st.sidebar.text_area('paste dataset', height = 5)
+            data = [row.split('\t') for row in text.split('\n')]
+            df = pd.DataFrame(data[1:], columns=data[0])
+            st.sidebar.write(df.shape)
+            y = st.sidebar.selectbox('select Y:',df.columns)
+        except:
+            st.sidebar.write(' :( ')
+            return 0, 0
+    else :
+        df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
+        st.sidebar.write(df.shape)
+        y = st.sidebar.selectbox('select Y:',df.columns)
 
-#     #y를 맨 처음으로 이동시킴
-#     cols = df.columns.to_list() 
-#     inxofy = cols.index(y) 
-#     cols.pop(inxofy) 
-#     cols = [y]+cols
-#     df = df[cols]
+    #y를 맨 처음으로 이동시킴
+    cols = df.columns.to_list() 
+    inxofy = cols.index(y) 
+    cols.pop(inxofy) 
+    cols = [y]+cols
+    df = df[cols]
 
-#     return df, y
+    return df, y
 
 
 
-# # y로 쓸걸 고름 
-# df, y_name = get_df()
+# y로 쓸걸 고름 
+df, y_name = get_df()
 
-# #x 인자를 고름 
-# x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list())
-# if 'all' in x :
-#     x = df.columns
-# if y_name not in x: 
-#     x.insert(0, y_name)
-# df = df[x]
+#x 인자를 고름 
+x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list())
+if 'all' in x :
+    x = df.columns
+if y_name not in x: 
+    x.insert(0, y_name)
+df = df[x]
 
-# st.sidebar.title('GRAPH') 
-# if st.sidebar.button('Draw PCP'):
+st.sidebar.title('GRAPH') 
+if st.sidebar.button('Draw PCP'):
 
-#     fig1, fig2, fig3 = pcp2(df, y_name) 
-#     fig1.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} )
-#     fig2.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} ) 
-#     fig3.update_layout(height=400, margin={'r':20, 't':50, 'l':50, 'b':50} ) 
-#     st.plotly_chart(fig3, use_container_width = True)
-#     st.plotly_chart(fig2, use_container_width=True)
-#     st.plotly_chart(fig1, use_container_width = True)
+    fig1, fig2, fig3 = pcp2(df, y_name) 
+    fig1.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} )
+    fig2.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} ) 
+    fig3.update_layout(height=400, margin={'r':20, 't':50, 'l':50, 'b':50} ) 
+    st.plotly_chart(fig3, use_container_width = True)
+    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig1, use_container_width = True)
 
 
-clipboard_text = st.text_area('paste dataset', height = 5)
-table_data = [row.split('\t') for row in clipboard_text.split('\n')]
-df = pd.DataFrame(table_data[1:], columns=table_data[0])
-st.write(df.head())
