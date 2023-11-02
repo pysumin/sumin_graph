@@ -120,6 +120,7 @@ def pcp2 (df, y_name):
 
 # def get_df():
 
+
 #     st.sidebar.title('Getting Dataset')
 #     howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'load clipboard'])
 #     if howtogetdataset == 'load clipboard':
