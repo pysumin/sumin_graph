@@ -122,17 +122,16 @@ def get_df():
 
 
     st.sidebar.title('Getting Dataset')
-    howtogetdataset = st.sidebar.selectbox('select dataset:', ['loade sample set', 'text input'])
+    howtogetdataset = st.sidebar.selectbox('select dataset:', ['text input','loade sample set' ])
     if howtogetdataset == 'text input':
-        try:
-            text = st.sidebar.text_area('paste dataset', height = 5)
-            data = [row.split('\t') for row in text.split('\n')]
-            df = pd.DataFrame(data[1:], columns=data[0])
-            st.sidebar.write(df.shape)
-            y = st.sidebar.selectbox('select Y:',df.columns)
-        except:
-            st.sidebar.write(' :( ')
-            return 0, 0
+        text = st.sidebar.text_area('paste dataset', height = 5)
+        data = [row.split('\t') for row in text.split('\n')]
+        df = pd.DataFrame(data[1:], columns=data[0])
+        
+        for i in df.columns:
+            df[i] = df[i].astype('float64', copy=True, errors='ignore')
+            st.write(df[i].dtype)
+        y = st.sidebar.selectbox('select Y:',df.columns)
     else :
         df = pd.read_csv("https://raw.githubusercontent.com/bcdunbar/datasets/master/iris.csv")
         st.sidebar.write(df.shape)
