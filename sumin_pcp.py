@@ -150,7 +150,7 @@ def get_df():
 df, y_name = get_df()
 
 #x 인자를 고름 
-x = st.sidebar.multiselect('select inputs:', ['all']+df.columns.to_list(), default = 'all')
+x = st.sidebar.multiselect('select inputs:', df.columns.to_list(), default = df.columns.to_list())
 if 'all' in x :
     x = df.columns
 if y_name not in x: 
