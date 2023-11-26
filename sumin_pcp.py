@@ -7,15 +7,13 @@ import plotly.graph_objs as go
 from sklearn.preprocessing import LabelEncoder 
 import streamlit.components.v1 as components 
 from plotly.subplots import make_subplots 
-import pyperclip
+
 
 plt.rcParams['font.family'] = 'Malgun Gothic' 
 st.set_page_config(layout="wide")
 
 # @st.cache_data(experimental_allow_widgets=True)
 # @st.cache_data
-
-
 
 def pcp2 (df, y_name):
     clsnum = 10  #범주가 이거보다 많으면 이걸로 퉁침 
