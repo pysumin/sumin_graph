@@ -7,6 +7,10 @@ import plotly.graph_objs as go
 from sklearn.preprocessing import LabelEncoder 
 import streamlit.components.v1 as components 
 from plotly.subplots import make_subplots 
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_digits
+import plotly.figure_factory as ff
 
 
 plt.rcParams['font.family'] = 'Malgun Gothic' 
@@ -142,13 +146,51 @@ def get_df():
 
     return df, y
 
+def pca():
+    df,y = load_digits(n_class=5, return_X_y = True ,as_frame=True)
+    # df 의 인덱스가 코일번호다.
+    # y는 코일번호가 속한 클래스다.
+
+    df_scaled = StandardScaler().fit_transform(df.T).T # 표준화
+    pca = PCA(n_components=2) 
+    pca_vals_scaled = pca.fit_transform(df_scaled)
+    pca_df = pd.DataFrame(data = pca_vals_scaled, columns = ['p1','p2'])
+    pca_df = pd.concat( [pca_df, y], axis = 1 )
+    # pca.explained_variance_ratio_,pca.components_
+    color_spaces = ['algae', 'amp' 'bluered', 'blugrn','brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl','darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric','emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+    'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet','magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges','orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl','piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+    'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu','rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar','spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+    'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid','turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr','ylorrd']
+
+    color_num = 5
+    fig1 = px.scatter(pca_df,   y= 'p2',    x= 'p1',    color = y
+                    ,color_continuous_scale= color_spaces[color_num] 
+                    #  , color_discrete_sequence='T10' 
+                    )
+
+    hist_data = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
+    glabels = list(pca_df.target.unique())
+    colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))
+    for i in glabels:    glabels[i] = str(i)
+    fig2 = ff.create_distplot(hist_data, group_labels = glabels, show_hist=False, show_rug=False
+                            ,colors = colors)
+    # fig2.show()
+
+    fig = make_subplots(rows=2, cols = 1)
+    fig.add_trace(fig1.data[0], row=1, col=1)
+    for i in range(len(fig2.data)):    
+        fig.add_trace(fig2.data[i], row=2, col=1)
+    return fig
 
 
-# y로 쓸걸 고름 
+
+#=================== y로 쓸걸 고름 
 df, y_name = get_df()
 
-#x 인자를 고름 
-x = st.sidebar.multiselect('select inputs:', df.columns.to_list(), default = df.columns.to_list())
+#===================x 인자를 고름 
+cols= df.columns.to_list()
+cols=['all']+cols
+x = st.sidebar.multiselect('select inputs:', cols, default = 'all')
 if 'all' in x :
     x = df.columns
 if y_name not in x: 
@@ -165,9 +207,12 @@ for col in cols:
 for key in filters.keys():
     df = df[    df[key].isin(filters[key])   ]
 
+# ==============이제 탭을 사용하자=====================
+t1,t2,t3 = st.tabs(['pcp','pca','row code'])
+
+
 # ===========그래프 그리기==========
-st.sidebar.title('GRAPH') 
-if st.sidebar.button('Draw PCP'):
+with t1:
     fig1, fig2, fig3 = pcp2(df, y_name) 
     fig1.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} )
     fig2.update_layout(height=400, margin={'r':50, 't':10, 'l':100, 'b':50} ) 
@@ -177,3 +222,58 @@ if st.sidebar.button('Draw PCP'):
     st.plotly_chart(fig1, use_container_width = True)
 
 
+with t2:
+    fig = pca()
+    st.plotly_chart(fig, use_container_width = True)
+
+
+with t3:
+    code = '''
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_digits
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import plotly.figure_factory as ff
+import numpy as np
+
+df,y = load_digits(n_class=5, return_X_y = True ,as_frame=True)
+# df 의 인덱스가 코일번호다.
+# y는 코일번호가 속한 클래스다.
+
+df_scaled = StandardScaler().fit_transform(df.T).T # 표준화
+pca = PCA(n_components=2) 
+pca_vals_scaled = pca.fit_transform(df_scaled)
+pca_df = pd.DataFrame(data = pca_vals_scaled, columns = ['p1','p2'])
+pca_df = pd.concat( [pca_df, y], axis = 1 )
+# pca.explained_variance_ratio_,pca.components_
+color_spaces = ['algae', 'amp' 'bluered', 'blugrn','brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl','darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric','emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet','magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges','orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl','piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu','rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar','spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid','turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr','ylorrd']
+
+color_num = 5
+fig1 = px.scatter(pca_df,   y= 'p2',    x= 'p1',    color = y
+                 ,color_continuous_scale= color_spaces[color_num] 
+                #  , color_discrete_sequence='T10' 
+                 )
+
+hist_data = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
+glabels = list(pca_df.target.unique())
+colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))
+for i in glabels:    glabels[i] = str(i)
+fig2 = ff.create_distplot(hist_data, group_labels = glabels, show_hist=False, show_rug=False
+                          ,colors = colors)
+# fig2.show()
+
+fig = make_subplots(rows=2, cols = 1)
+fig.add_trace(fig1.data[0], row=1, col=1)
+for i in range(len(fig2.data)):    
+    fig.add_trace(fig2.data[i], row=2, col=1)
+fig.show()
+
+
+            '''
+    st.code(code, language='python')
