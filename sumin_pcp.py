@@ -162,27 +162,57 @@ def pca():
     'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu','rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar','spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
     'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid','turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr','ylorrd']
 
-    color_num = 5
+    color_num = 18
+
+    # pca값 의 산점도
     fig1 = px.scatter(pca_df,   y= 'p2',    x= 'p1',    color = y
                     ,color_continuous_scale= color_spaces[color_num] 
-                    #  , color_discrete_sequence='T10' 
                     )
+    
+    # pca값의 분포를 그리기 위함
+    hist_data1 = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
+    hist_data2 = [ pca_df[ pca_df.target == i ]['p2'] for i in y.unique()  ]
+    glabels = list(pca_df.target.unique())   #계열 이름.
+    colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))  #색깔 리스트
+    for i in glabels:    glabels[i] = str(i)   #숫자 일수도 있어서 문자열로 바꿔줘야 함. 
+    fig2 = ff.create_distplot(hist_data1, group_labels = glabels, show_hist=False, show_rug=False
+                            ,colors = colors    )
+    fig3 = ff.create_distplot(hist_data2, group_labels = glabels, show_hist=False, show_rug=False
+                            ,colors = colors    )
+    fig4 = px.line(pca.components_[0,:]
+                   , markers =True
+                   , color_discrete_sequence=[colors[0]]     )
+    fig4.data[0].name = 'PCA1 성분'
+    fig5 = px.line(pca.components_[1,:]
+                   , markers =True
+                   , color_discrete_sequence=[colors[1]]      )
+    fig5.data[0].name = 'PCA2 성분'
 
-    hist_data = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
-    glabels = list(pca_df.target.unique())
-    colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))
-    for i in glabels:    glabels[i] = str(i)
-    fig2 = ff.create_distplot(hist_data, group_labels = glabels, show_hist=False, show_rug=False
-                            ,colors = colors)
     # fig2.show()
 
-    fig = make_subplots(rows=2, cols = 1)
-    fig.add_trace(fig1.data[0], row=1, col=1)
+#  ==================서브 플롯 생성
+    fig = make_subplots(rows=4, cols = 1
+                        ,row_heights = [0.4, 0.2, 0.2, 0.2]
+                        )
+    fig.add_trace(fig1.data[0], row=1, col=1)   #첫번째 그래프
     for i in range(len(fig2.data)):    
-        fig.add_trace(fig2.data[i], row=2, col=1)
+        fig.add_trace(fig2.data[i], row=2, col=1)   #두번째 그래프
+        fig.add_trace(fig3.data[i], row=3, col=1)   #세번째 그래프
+    fig.add_trace(fig4.data[0], row =4,  col=1)
+    fig.add_trace(fig5.data[0], row =4,  col=1)
+
+    fig.update(layout_coloraxis_showscale=False)
+    fig.update_xaxes(title_text="PCA1 값", row=1, col=1)
+    fig.update_yaxes(title_text="PCA2 값", row=1, col=1)
+    fig.update_yaxes(title_text="PCA1값 분포", row=2, col=1)
+    fig.update_yaxes(title_text="PCA2값 분포", row=3, col=1)
+    fig.update_xaxes(title_text="프로파일 길이", row=4, col=1)
+    fig.update_legends()
+    
+    fig.update_layout(height=800, margin={'r':50, 't':20, 'l':100, 'b':50}
+                    #   ,showlegend=False, row=2, col=1
+                       )
     return fig
-
-
 
 #=================== y로 쓸걸 고름 
 df, y_name = get_df()
@@ -210,7 +240,6 @@ for key in filters.keys():
 # ==============이제 탭을 사용하자=====================
 t1,t2,t3 = st.tabs(['pcp','pca','row code'])
 
-
 # ===========그래프 그리기==========
 with t1:
     fig1, fig2, fig3 = pcp2(df, y_name) 
@@ -229,50 +258,68 @@ with t2:
 
 with t3:
     code = '''
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.datasets import load_digits
-import plotly.express as px
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import plotly.figure_factory as ff
-import numpy as np
+def pca():
+    df,y = load_digits(n_class=5, return_X_y = True ,as_frame=True)
+    # df 의 인덱스가 코일번호다.
+    # y는 코일번호가 속한 클래스다.
 
-df,y = load_digits(n_class=5, return_X_y = True ,as_frame=True)
-# df 의 인덱스가 코일번호다.
-# y는 코일번호가 속한 클래스다.
+    df_scaled = StandardScaler().fit_transform(df.T).T # 표준화
+    pca = PCA(n_components=2) 
+    pca_vals_scaled = pca.fit_transform(df_scaled)
+    pca_df = pd.DataFrame(data = pca_vals_scaled, columns = ['p1','p2'])
+    pca_df = pd.concat( [pca_df, y], axis = 1 )
+    # pca.explained_variance_ratio_,pca.components_
+    color_spaces = ['algae', 'amp' 'bluered', 'blugrn','brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl','darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric','emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
+    'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet','magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges','orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl','piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
+    'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu','rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar','spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
+    'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid','turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr','ylorrd']
 
-df_scaled = StandardScaler().fit_transform(df.T).T # 표준화
-pca = PCA(n_components=2) 
-pca_vals_scaled = pca.fit_transform(df_scaled)
-pca_df = pd.DataFrame(data = pca_vals_scaled, columns = ['p1','p2'])
-pca_df = pd.concat( [pca_df, y], axis = 1 )
-# pca.explained_variance_ratio_,pca.components_
-color_spaces = ['algae', 'amp' 'bluered', 'blugrn','brwnyl', 'bugn', 'bupu', 'burg', 'burgyl', 'cividis', 'curl','darkmint', 'deep', 'delta', 'dense', 'earth', 'edge', 'electric','emrld', 'fall', 'geyser', 'gnbu', 'gray', 'greens', 'greys',
-'haline', 'hot', 'hsv', 'ice', 'icefire', 'inferno', 'jet','magenta', 'magma', 'matter', 'mint', 'mrybm', 'mygbm', 'oranges','orrd', 'oryel', 'oxy', 'peach', 'phase', 'picnic', 'pinkyl','piyg', 'plasma', 'plotly3', 'portland', 'prgn', 'pubu', 'pubugn',
-'puor', 'purd', 'purp', 'purples', 'purpor', 'rainbow', 'rdbu','rdgy', 'rdpu', 'rdylbu', 'rdylgn', 'redor', 'reds', 'solar','spectral', 'speed', 'sunset', 'sunsetdark', 'teal', 'tealgrn',
-'tealrose', 'tempo', 'temps', 'thermal', 'tropic', 'turbid','turbo', 'twilight', 'viridis', 'ylgn', 'ylgnbu', 'ylorbr','ylorrd']
+    color_num = 7
 
-color_num = 5
-fig1 = px.scatter(pca_df,   y= 'p2',    x= 'p1',    color = y
-                 ,color_continuous_scale= color_spaces[color_num] 
-                #  , color_discrete_sequence='T10' 
-                 )
+    # pca값 의 산점도
+    fig1 = px.scatter(pca_df,   y= 'p2',    x= 'p1',    color = y
+                    # ,color_continuous_scale= color_spaces[color_num] 
+                    )
+    
+    # pca값의 분포를 그리기 위함
+    hist_data1 = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
+    hist_data2 = [ pca_df[ pca_df.target == i ]['p2'] for i in y.unique()  ]
+    glabels = list(pca_df.target.unique())   #계열 이름.
+    colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))  #색깔 리스트
+    for i in glabels:    glabels[i] = str(i)   #숫자 일수도 있어서 문자열로 바꿔줘야 함. 
+    fig2 = ff.create_distplot(hist_data1, group_labels = glabels, show_hist=False, show_rug=False
+                            ,colors = colors    )
+    fig3 = ff.create_distplot(hist_data2, group_labels = glabels, show_hist=False, show_rug=False
+                            ,colors = colors    )
+    fig4 = px.line(pca.components_[0,:], title = 'pca_label1')
+    fig5 = px.line(pca.components_[1,:], title = 'pca_label2')
 
-hist_data = [ pca_df[ pca_df.target == i ]['p1'] for i in y.unique()  ]
-glabels = list(pca_df.target.unique())
-colors = px.colors.sample_colorscale(color_spaces[color_num], len(y.unique()))
-for i in glabels:    glabels[i] = str(i)
-fig2 = ff.create_distplot(hist_data, group_labels = glabels, show_hist=False, show_rug=False
-                          ,colors = colors)
-# fig2.show()
+    # fig2.show()
 
-fig = make_subplots(rows=2, cols = 1)
-fig.add_trace(fig1.data[0], row=1, col=1)
-for i in range(len(fig2.data)):    
-    fig.add_trace(fig2.data[i], row=2, col=1)
-fig.show()
+#  ==================서브 플롯 생성
+    fig = make_subplots(rows=4, cols = 1
+                        ,subplot_titles=('PCA 값분포', 'PCA1 분포', 'PCA2 분포', 'PCA 성분 ')
+                        ,row_heights = [0.4, 0.2, 0.2, 0.2]
+                        )
+    fig.add_trace(fig1.data[0], row=1, col=1)   #첫번째 그래프
+    for i in range(len(fig2.data)):    
+        fig.add_trace(fig2.data[i], row=2, col=1)   #두번째 그래프
+        fig.add_trace(fig3.data[i], row=3, col=1)   #세번째 그래프
+    fig.add_trace(fig4.data[0], row =4,  col=1)
+    fig.add_trace(fig5.data[0], row =4,  col=1)
+
+    fig.update(layout_coloraxis_showscale=False)
+    fig.update_xaxes(title_text="PCA1 값", row=1, col=1)
+    fig.update_yaxes(title_text="PCA2 값", row=1, col=1)
+    fig.update_xaxes(title_text="프로파일 길이", row=4, col=1)
+    fig.update_xaxes(title_text="PCA값 1", row=2, col=1)
+    fig.update_yaxes(title_text="빈도", row=2, col=1)
+    fig.update_xaxes(title_text="PCA값 2", row=3, col=1)
+    fig.update_yaxes(title_text="빈도", row=3, col=1)
+    
+    fig.update_layout(height=800, margin={'r':50, 't':20, 'l':100, 'b':50}
+                       )
+    return fig
 
 
             '''
